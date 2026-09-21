@@ -12,6 +12,10 @@ CONTACT_USERNAME = os.environ.get("CONTACT_USERNAME", "")
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
 GITHUB_URL = os.environ.get("GITHUB_URL", "")
 
+# Учёт визитов (telegram_id, события) + выгрузка на Яндекс.Диск. По умолчанию выключен:
+# при хранении данных вне РФ это нарушает локализацию ПДн (ст. 18 ч. 5 152-ФЗ).
+ANALYTICS_ENABLED = os.environ.get("ANALYTICS_ENABLED", "false").strip().lower() in ("1", "true", "yes")
+
 # Оператор персональных данных (152-ФЗ) — подставляется в политику конфиденциальности.
 OPERATOR_NAME = os.environ.get("OPERATOR_NAME", "Максим Минеев")
 OPERATOR_INN = os.environ.get("OPERATOR_INN", "")

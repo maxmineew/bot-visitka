@@ -19,7 +19,8 @@ logger = logging.getLogger(__name__)
 
 
 async def main() -> None:
-    init_db()
+    if config.ANALYTICS_ENABLED:
+        init_db()
 
     session = AiohttpSession(proxy=config.BOT_PROXY) if config.BOT_PROXY else AiohttpSession()
     bot = Bot(
@@ -29,15 +30,18 @@ async def main() -> None:
     )
     dp = Dispatcher(storage=MemoryStorage())
 
-    gate = ConsentGateMiddleware()
-    dp.message.middleware(gate)
-    dp.callback_query.middleware(gate)
+    # Аналитика (152-ФЗ) выключена по умолчанию: без неё бот не хранит никаких данных
+    # пользователей, согласие не нужно. Включать — только на хостинге в РФ.
+    if config.ANALYTICS_ENABLED:
+        gate = ConsentGateMiddleware()
+        dp.message.middleware(gate)
+        dp.callback_query.middleware(gate)
 
-    tracking = VisitTrackingMiddleware()
-    dp.message.middleware(tracking)
-    dp.callback_query.middleware(tracking)
+        tracking = VisitTrackingMiddleware()
+        dp.message.middleware(tracking)
+        dp.callback_query.middleware(tracking)
 
-    dp.include_router(privacy.router)
+        dp.include_router(privacy.router)
     dp.include_router(start.router)
     dp.include_router(main_menu.router)
     dp.include_router(demo.router)
