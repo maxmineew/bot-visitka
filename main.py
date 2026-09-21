@@ -2,8 +2,10 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.exceptions import TelegramNetworkError
 from aiogram.fsm.storage.memory import MemoryStorage
 
 import config
@@ -18,7 +20,12 @@ logger = logging.getLogger(__name__)
 async def main() -> None:
     init_db()
 
-    bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    session = AiohttpSession(proxy=config.BOT_PROXY) if config.BOT_PROXY else AiohttpSession()
+    bot = Bot(
+        token=config.BOT_TOKEN,
+        session=session,
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
     dp = Dispatcher(storage=MemoryStorage())
 
     tracking = VisitTrackingMiddleware()
@@ -30,7 +37,16 @@ async def main() -> None:
     dp.include_router(demo.router)
     dp.include_router(cases.router)
 
-    await bot.delete_webhook(drop_pending_updates=True)
+    # api.telegram.org с некоторых хостингов отвечает нестабильно — ретраим, а не падаем.
+    for attempt in range(1, 6):
+        try:
+            await bot.delete_webhook(drop_pending_updates=True)
+            break
+        except TelegramNetworkError as exc:
+            logger.warning("Telegram API недоступен (попытка %d/5): %s", attempt, exc)
+            if attempt == 5:
+                raise
+            await asyncio.sleep(10 * attempt)
     logger.info("Bot started, polling...")
     await dp.start_polling(bot)
 

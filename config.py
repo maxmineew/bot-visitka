@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
+# Необязательный HTTP-прокси для api.telegram.org, например http://user:pass@host:port
+BOT_PROXY = os.environ.get("BOT_PROXY", "")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0")) or None
 CONTACT_USERNAME = os.environ.get("CONTACT_USERNAME", "")
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
