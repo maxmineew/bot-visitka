@@ -2,8 +2,10 @@
 
 Важно (152-ФЗ «О персональных данных»): мы намеренно НЕ сохраняем username,
 имя, фамилию, телефон или текст сообщений пользователя — только:
-- telegram_id — числовой идентификатор аккаунта в Telegram (сам по себе
-  не раскрывает личность человека без доступа к данным самого Telegram);
+- telegram_id — числовой идентификатор аккаунта в Telegram. Считаем его
+  персональными данными (косвенный идентификатор), поэтому пишем только после
+  согласия (таблица consents), даём удалить данные (/delete_data) и удаляем
+  по сроку хранения (config.RETENTION_DAYS);
 - временные метки визитов;
 - какие разделы/кейсы бота смотрели (callback_data или имя команды вида
   "/start" — свободный текст, который пользователь мог бы ввести сам,
@@ -17,6 +19,8 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+
+import config
 
 DB_PATH = Path(__file__).parent / "visits.db"
 
@@ -59,6 +63,47 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS consents (
+                telegram_id INTEGER PRIMARY KEY,
+                given_at    TEXT NOT NULL,
+                policy_ver  TEXT NOT NULL
+            )
+            """
+        )
+        cutoff = (_now() - timedelta(days=config.RETENTION_DAYS)).isoformat(timespec="seconds")
+        stale = conn.execute("SELECT telegram_id FROM visitors WHERE last_seen < ?", (cutoff,)).fetchall()
+        for (telegram_id,) in stale:
+            _erase(conn, telegram_id)
+        conn.commit()
+
+
+def _erase(conn: sqlite3.Connection, telegram_id: int) -> None:
+    conn.execute("DELETE FROM events WHERE telegram_id = ?", (telegram_id,))
+    conn.execute("DELETE FROM visitors WHERE telegram_id = ?", (telegram_id,))
+    conn.execute("DELETE FROM consents WHERE telegram_id = ?", (telegram_id,))
+
+
+def has_consent(telegram_id: int) -> bool:
+    with closing(_connect()) as conn:
+        row = conn.execute("SELECT 1 FROM consents WHERE telegram_id = ?", (telegram_id,)).fetchone()
+        return row is not None
+
+
+def give_consent(telegram_id: int, policy_ver: str) -> None:
+    with closing(_connect()) as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO consents (telegram_id, given_at, policy_ver) VALUES (?, ?, ?)",
+            (telegram_id, _now().isoformat(timespec="seconds"), policy_ver),
+        )
+        conn.commit()
+
+
+def erase_user(telegram_id: int) -> None:
+    """Отзыв согласия: удаляет все данные пользователя, включая запись о согласии."""
+    with closing(_connect()) as conn:
+        _erase(conn, telegram_id)
         conn.commit()
 
 

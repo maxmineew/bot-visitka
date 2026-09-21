@@ -11,7 +11,8 @@ from aiogram.fsm.storage.memory import MemoryStorage
 import config
 from analytics.middleware import VisitTrackingMiddleware
 from analytics.storage import init_db
-from handlers import cases, demo, main_menu, start
+from handlers import cases, demo, main_menu, privacy, start
+from handlers.consent_gate import ConsentGateMiddleware
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -28,10 +29,15 @@ async def main() -> None:
     )
     dp = Dispatcher(storage=MemoryStorage())
 
+    gate = ConsentGateMiddleware()
+    dp.message.middleware(gate)
+    dp.callback_query.middleware(gate)
+
     tracking = VisitTrackingMiddleware()
     dp.message.middleware(tracking)
     dp.callback_query.middleware(tracking)
 
+    dp.include_router(privacy.router)
     dp.include_router(start.router)
     dp.include_router(main_menu.router)
     dp.include_router(demo.router)

@@ -4,7 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import CallbackQuery, Message, TelegramObject
 
 from analytics.export import schedule_export
-from analytics.storage import record_event
+from analytics.storage import has_consent, record_event
 
 
 class VisitTrackingMiddleware(BaseMiddleware):
@@ -18,7 +18,7 @@ class VisitTrackingMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         user = getattr(event, "from_user", None)
-        if user is not None:
+        if user is not None and has_consent(user.id):
             action = _describe(event)
             record_event(user.id, action)
             schedule_export()
