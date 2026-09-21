@@ -1,7 +1,7 @@
 from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-from data.loader import Case
+from content.loader import Case
 
 
 def cases_list_kb(cases: list[Case]) -> InlineKeyboardMarkup:

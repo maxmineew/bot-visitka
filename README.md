@@ -9,8 +9,8 @@ Telegram-бот-визитка для демонстрации кейсов (AI-
 ```
 main.py              # точка входа: Bot, Dispatcher, polling
 config.py            # чтение переменных окружения
-data/cases.yaml       # содержимое кейсов
-data/loader.py         # загрузка и выборка кейсов из YAML
+content/cases.yaml       # содержимое кейсов
+content/loader.py         # загрузка и выборка кейсов из YAML
 keyboards/            # inline-клавиатуры
 handlers/              # обработчики команд и callback-кнопок
 texts/messages.py       # статические тексты бота
@@ -40,7 +40,7 @@ deploy/bot-visitka.service  # systemd unit для деплоя на сервер
 
 ## Редактирование кейсов
 
-Все кейсы хранятся в `data/cases.yaml`. Каждый кейс — это:
+Все кейсы хранятся в `content/cases.yaml`. Каждый кейс — это:
 
 - `featured: true` — попадает в основной список кейсов (полная карточка);
 - `featured: false` — попадает в список «Ещё кейсы» (краткая строка без карточки).

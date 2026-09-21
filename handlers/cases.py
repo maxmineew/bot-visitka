@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, FSInputFile
 
 import texts.messages as texts
-from data.loader import Case, featured_cases, get_case, other_cases
+from content.loader import Case, featured_cases, get_case, other_cases
 from keyboards.case_card import back_to_card_kb, case_card_kb
 from keyboards.cases_menu import cases_list_kb, other_cases_kb
 
