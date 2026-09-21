@@ -1,0 +1,16 @@
+[Unit]
+Description=Telegram bot-visitka (Maxim Mineev)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=bot-visitka
+WorkingDirectory=/opt/bot-visitka
+EnvironmentFile=/opt/bot-visitka/.env
+ExecStart=/opt/bot-visitka/.venv/bin/python /opt/bot-visitka/main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

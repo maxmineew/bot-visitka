@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+analytics/visits.db
+analytics/visits.db-*
+logfile
+.claude/
+*.rar
