@@ -19,8 +19,6 @@
   review: null
   detailed_case: null
   images: ["cover.jpg"]
-  links:
-    site: "https://mirkruizov.com/"
 
 - id: dental-bot
   featured: true
